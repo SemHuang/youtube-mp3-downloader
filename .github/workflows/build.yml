@@ -1,0 +1,60 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install ffmpeg
+        run: choco install ffmpeg -y
+      - name: Install Python deps
+        run: pip install pyinstaller yt-dlp
+      - name: Build
+        run: pyinstaller --onefile --windowed --name you2tomp3 main.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: yt-mp3-windows
+          path: dist/you2tomp3.exe
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install ffmpeg
+        run: brew install ffmpeg
+      - name: Install Python deps
+        run: pip install pyinstaller yt-dlp
+      - name: Build
+        run: pyinstaller --onefile --windowed --name you2tomp3 main.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: yt-mp3-macos
+          path: dist/you2tomp3
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install ffmpeg
+        run: sudo apt-get install -y ffmpeg
+      - name: Install Python deps
+        run: pip install pyinstaller yt-dlp
+      - name: Build
+        run: pyinstaller --onefile --name you2tomp3 main.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: yt-mp3-linux
+          path: dist/you2tomp3
