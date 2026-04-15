@@ -17,7 +17,15 @@ jobs:
       - name: Install Python deps
         run: pip install pyinstaller yt-dlp
       - name: Build
-        run: pyinstaller --onefile --windowed --name you2tomp3 src/main.py
+        run: |
+          $ffmpeg = (Get-Command ffmpeg).Source
+          $ffprobe = (Get-Command ffprobe).Source
+          $ffplay = (Get-Command ffplay).Source
+          pyinstaller --onefile --windowed --name you2tomp3 `
+            --add-binary "${ffmpeg};ffmpeg" `
+            --add-binary "${ffprobe};ffmpeg" `
+            --add-binary "${ffplay};ffmpeg" `
+            main.py
       - uses: actions/upload-artifact@v5
         with:
           name: yt-mp3-windows
@@ -35,7 +43,12 @@ jobs:
       - name: Install Python deps
         run: pip install pyinstaller yt-dlp
       - name: Build
-        run: pyinstaller --onefile --windowed --name you2tomp3 src/main.py
+        run: |
+          pyinstaller --onefile --windowed --name you2tomp3 \
+            --add-binary "$(which ffmpeg):ffmpeg" \
+            --add-binary "$(which ffprobe):ffmpeg" \
+            --add-binary "$(which ffplay):ffmpeg" \
+            main.py
       - uses: actions/upload-artifact@v5
         with:
           name: yt-mp3-macos
@@ -53,7 +66,12 @@ jobs:
       - name: Install Python deps
         run: pip install pyinstaller yt-dlp
       - name: Build
-        run: pyinstaller --onefile --name you2tomp3 src/main.py
+        run: |
+          pyinstaller --onefile --name you2tomp3 \
+            --add-binary "$(which ffmpeg):ffmpeg" \
+            --add-binary "$(which ffprobe):ffmpeg" \
+            --add-binary "$(which ffplay):ffmpeg" \
+            main.py
       - uses: actions/upload-artifact@v5
         with:
           name: yt-mp3-linux
