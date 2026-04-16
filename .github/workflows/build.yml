@@ -12,20 +12,21 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
-      - name: Install ffmpeg
-        run: choco install ffmpeg -y
+      
+      - name: Download Static FFmpeg (Windows)
+        run: |
+          curl -L -o ffmpeg.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-win-64.zip
+          Expand-Archive ffmpeg.zip -DestinationPath .
+          
       - name: Install Python deps
         run: pip install pyinstaller yt-dlp
+        
       - name: Build
         run: |
-          $ffmpeg = (Get-Command ffmpeg).Source
-          $ffprobe = (Get-Command ffprobe).Source
-          $ffplay = (Get-Command ffplay).Source
           pyinstaller --onefile --windowed --name you2tomp3 `
-            --add-binary "${ffmpeg};ffmpeg" `
-            --add-binary "${ffprobe};ffmpeg" `
-            --add-binary "${ffplay};ffmpeg" `
+            --add-binary "ffmpeg.exe;." `
             src/main.py
+            
       - uses: actions/upload-artifact@v5
         with:
           name: yt-mp3-windows
@@ -38,21 +39,25 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
-      - name: Install ffmpeg
-        run: brew install ffmpeg
+          
+      - name: Download Static FFmpeg (macOS)
+        run: |
+          curl -L -o ffmpeg.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-osx-64.zip
+          unzip ffmpeg.zip
+          
       - name: Install Python deps
         run: pip install pyinstaller yt-dlp
+        
       - name: Build
         run: |
           pyinstaller --onefile --windowed --name you2tomp3 \
-            --add-binary "$(which ffmpeg):ffmpeg" \
-            --add-binary "$(which ffprobe):ffmpeg" \
-            --add-binary "$(which ffplay):ffmpeg" \
+            --add-binary "ffmpeg:." \
             src/main.py
+            
       - uses: actions/upload-artifact@v5
         with:
           name: yt-mp3-macos
-          path: dist/you2tomp3
+          path: dist/you2tomp3.app
 
   build-linux:
     runs-on: ubuntu-latest
@@ -61,17 +66,21 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
-      - name: Install ffmpeg
-        run: sudo apt-get install -y ffmpeg
+          
+      - name: Download Static FFmpeg (Linux)
+        run: |
+          curl -L -o ffmpeg.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-linux-64.zip
+          unzip ffmpeg.zip
+          
       - name: Install Python deps
         run: pip install pyinstaller yt-dlp
+        
       - name: Build
         run: |
           pyinstaller --onefile --name you2tomp3 \
-            --add-binary "$(which ffmpeg):ffmpeg" \
-            --add-binary "$(which ffprobe):ffmpeg" \
-            --add-binary "$(which ffplay):ffmpeg" \
+            --add-binary "ffmpeg:." \
             src/main.py
+            
       - uses: actions/upload-artifact@v5
         with:
           name: yt-mp3-linux
