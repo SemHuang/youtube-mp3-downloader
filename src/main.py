@@ -13,16 +13,15 @@ stop_flag = False
 os.makedirs("music", exist_ok=True)
 
 
-def resource_path(relative):
-
+def get_bin_dir():
+    """取得執行檔或 PyInstaller 解壓縮後的暫存目錄"""
     try:
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.abspath(".")
-
-    return os.path.join(base_path, relative)
-
-
+        # PyInstaller 執行時的暫存目錄
+        return sys._MEIPASS
+    except AttributeError:
+        # 開發環境下的當前目錄
+        return os.path.abspath(".")
+    
 def clean_url(url):
 
     match = re.search(r"v=([a-zA-Z0-9_-]+)", url)
@@ -95,7 +94,7 @@ def download_worker():
             "noplaylist": True,
             "restrictfilenames": True,
             "outtmpl": "music/%(title)s.%(ext)s",
-            "ffmpeg_location": resource_path("ffmpeg"),
+            "ffmpeg_location": get_bin_dir(),
             "progress_hooks": [progress_hook],
             "postprocessor_hooks": [postprocessor_hook],
             "postprocessors": [{

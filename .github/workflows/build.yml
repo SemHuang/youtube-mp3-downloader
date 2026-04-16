@@ -13,10 +13,12 @@ jobs:
         with:
           python-version: "3.11"
       
-      - name: Download Static FFmpeg (Windows)
+      - name: Download Static FFmpeg & FFprobe (Windows)
         run: |
           curl -L -o ffmpeg.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-win-64.zip
-          Expand-Archive ffmpeg.zip -DestinationPath .
+          curl -L -o ffprobe.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffprobe-6.1-win-64.zip
+          Expand-Archive ffmpeg.zip -DestinationPath . -Force
+          Expand-Archive ffprobe.zip -DestinationPath . -Force
           
       - name: Install Python deps
         run: pip install pyinstaller yt-dlp
@@ -25,6 +27,7 @@ jobs:
         run: |
           pyinstaller --onefile --windowed --name you2tomp3 `
             --add-binary "ffmpeg.exe;." `
+            --add-binary "ffprobe.exe;." `
             src/main.py
             
       - uses: actions/upload-artifact@v5
@@ -40,10 +43,12 @@ jobs:
         with:
           python-version: "3.11"
           
-      - name: Download Static FFmpeg (macOS)
+      - name: Download Static FFmpeg & FFprobe (macOS)
         run: |
           curl -L -o ffmpeg.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-osx-64.zip
-          unzip ffmpeg.zip
+          curl -L -o ffprobe.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffprobe-6.1-osx-64.zip
+          unzip -o ffmpeg.zip
+          unzip -o ffprobe.zip
           
       - name: Install Python deps
         run: pip install pyinstaller yt-dlp
@@ -52,6 +57,7 @@ jobs:
         run: |
           pyinstaller --onefile --windowed --name you2tomp3 \
             --add-binary "ffmpeg:." \
+            --add-binary "ffprobe:." \
             src/main.py
             
       - uses: actions/upload-artifact@v5
@@ -67,10 +73,12 @@ jobs:
         with:
           python-version: "3.11"
           
-      - name: Download Static FFmpeg (Linux)
+      - name: Download Static FFmpeg & FFprobe (Linux)
         run: |
           curl -L -o ffmpeg.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-linux-64.zip
-          unzip ffmpeg.zip
+          curl -L -o ffprobe.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffprobe-6.1-linux-64.zip
+          unzip -o ffmpeg.zip
+          unzip -o ffprobe.zip
           
       - name: Install Python deps
         run: pip install pyinstaller yt-dlp
@@ -79,6 +87,7 @@ jobs:
         run: |
           pyinstaller --onefile --name you2tomp3 \
             --add-binary "ffmpeg:." \
+            --add-binary "ffprobe:." \
             src/main.py
             
       - uses: actions/upload-artifact@v5
