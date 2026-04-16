@@ -15,6 +15,7 @@ jobs:
       
       - name: Download Static FFmpeg & FFprobe (Windows)
         run: |
+          # 修正後的 Windows 下載連結
           curl -L -o ffmpeg.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-win-64.zip
           curl -L -o ffprobe.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffprobe-6.1-win-64.zip
           Expand-Archive ffmpeg.zip -DestinationPath . -Force
@@ -45,10 +46,12 @@ jobs:
           
       - name: Download Static FFmpeg & FFprobe (macOS)
         run: |
-          curl -L -o ffmpeg.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-osx-64.zip
-          curl -L -o ffprobe.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffprobe-6.1-osx-64.zip
+          # 關鍵修正：將 osx-64 改為 macos-64
+          curl -L -o ffmpeg.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-macos-64.zip
+          curl -L -o ffprobe.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffprobe-6.1-macos-64.zip
           unzip -o ffmpeg.zip
           unzip -o ffprobe.zip
+          chmod +x ffmpeg ffprobe
           
       - name: Install Python deps
         run: pip install pyinstaller yt-dlp
@@ -79,6 +82,7 @@ jobs:
           curl -L -o ffprobe.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffprobe-6.1-linux-64.zip
           unzip -o ffmpeg.zip
           unzip -o ffprobe.zip
+          chmod +x ffmpeg ffprobe
           
       - name: Install Python deps
         run: pip install pyinstaller yt-dlp
