@@ -25,7 +25,7 @@ jobs:
             --add-binary "${ffmpeg};ffmpeg" `
             --add-binary "${ffprobe};ffmpeg" `
             --add-binary "${ffplay};ffmpeg" `
-            main.py
+            src/main.py
       - uses: actions/upload-artifact@v5
         with:
           name: yt-mp3-windows
@@ -48,7 +48,7 @@ jobs:
             --add-binary "$(which ffmpeg):ffmpeg" \
             --add-binary "$(which ffprobe):ffmpeg" \
             --add-binary "$(which ffplay):ffmpeg" \
-            main.py
+            src/main.py
       - uses: actions/upload-artifact@v5
         with:
           name: yt-mp3-macos
@@ -71,7 +71,7 @@ jobs:
             --add-binary "$(which ffmpeg):ffmpeg" \
             --add-binary "$(which ffprobe):ffmpeg" \
             --add-binary "$(which ffplay):ffmpeg" \
-            main.py
+            src/main.py
       - uses: actions/upload-artifact@v5
         with:
           name: yt-mp3-linux
