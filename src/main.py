@@ -117,31 +117,6 @@ def progress_hook(d):
         root.after(0, status_label.config, {"text": "轉換 MP3 中..."})
 
 
-def postprocessor_hook(d):
-
-    if d["status"] == "started":
-
-        root.after(0, update_progress, 0, "", "轉換 MP3")
-        root.after(0, status_label.config, {"text": "轉換 MP3 中..."})
-
-    elif d["status"] == "processing":
-
-        # yt-dlp provides elapsed/total when available
-        elapsed = d.get("elapsed_time")
-        total_time = d.get("total_time")
-
-        if elapsed is not None and total_time and total_time > 0:
-            percent = min(elapsed / total_time * 100, 99)
-            root.after(0, update_progress, percent, "", "轉換 MP3")
-        else:
-            # Pulse the bar to show activity when exact progress is unavailable
-            root.after(0, pulse_progress)
-
-    elif d["status"] == "finished":
-
-        root.after(0, update_progress, 100, "", "轉換 MP3")
-
-
 def download_worker():
     global stop_flag
     while True:
@@ -154,8 +129,9 @@ def download_worker():
         # 修改 ydl_opts，移除自動轉檔，只負責下載最好的音訊
         ydl_opts = {
             "format": "bestaudio/best",
+            "noplaylist": True,   # 加回來
+            "restrictfilenames": True,  # 加回來
             "outtmpl": "music/%(title)s.%(ext)s",
-            "ffmpeg_location": get_bin_dir(),
             "progress_hooks": [progress_hook],
         }
 
@@ -222,13 +198,6 @@ def update_progress(percent, speed, phase=""):
     status_label.config(text=f"{phase_str}{percent:.1f}%{speed_str}")
 
 
-def pulse_progress():
-    """Animate the bar slightly to indicate activity when exact % is unknown."""
-    current = progress["value"]
-    next_val = (current + 2) % 100
-    progress["value"] = next_val
-
-
 def start_worker():
 
     t = threading.Thread(target=download_worker, daemon=True)
@@ -255,9 +224,6 @@ tk.Button(frame, text="停止下載", command=stop_download).pack(side="left", p
 
 progress = ttk.Progressbar(root, length=400, maximum=100)
 progress.pack(pady=5)
-
-phase_label = tk.Label(root, text="", font=("Arial", 9), fg="gray")
-phase_label.pack()
 
 status_label = tk.Label(root, text="等待下載")
 status_label.pack()
