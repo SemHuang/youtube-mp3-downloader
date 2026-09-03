@@ -1,0 +1,107 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Download FFmpeg (Windows)
+        run: |
+          curl -L -o ffmpeg.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-win-64.zip
+          curl -L -o ffprobe.zip https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffprobe-6.1-win-64.zip
+          Expand-Archive ffmpeg.zip -DestinationPath . -Force
+          Expand-Archive ffprobe.zip -DestinationPath . -Force
+
+      - name: Write credentials
+        run: |
+          $env:GOOGLE_CREDENTIALS | Out-File -FilePath src\credentials.json -Encoding utf8
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+      - name: Install Python deps
+        run: pip install pyinstaller yt-dlp google-api-python-client google-auth-httplib2 google-auth-oauthlib
+
+      - name: Build
+        run: |
+          pyinstaller --onefile --windowed --name you2tomp3 `
+            --add-binary "ffmpeg.exe;." `
+            --add-binary "ffprobe.exe;." `
+            --add-data "src\credentials.json;." `
+            src/main.py
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: yt-mp3-windows
+          path: dist/you2tomp3.exe
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install FFmpeg (macOS)
+        run: brew install ffmpeg
+
+      - name: Write credentials
+        run: echo "$GOOGLE_CREDENTIALS" > src/credentials.json
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+      - name: Install Python deps
+        run: pip install pyinstaller yt-dlp google-api-python-client google-auth-httplib2 google-auth-oauthlib
+
+      - name: Build
+        run: |
+          pyinstaller --onefile --name you2tomp3 \
+            --add-binary "$(which ffmpeg):." \
+            --add-binary "$(which ffprobe):." \
+            --add-data "src/credentials.json:." \
+            src/main.py
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: yt-mp3-macos
+          path: dist/you2tomp3
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install FFmpeg (Linux)
+        run: sudo apt-get install -y ffmpeg
+
+      - name: Write credentials
+        run: echo "$GOOGLE_CREDENTIALS" > src/credentials.json
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+      - name: Install Python deps
+        run: pip install pyinstaller yt-dlp google-api-python-client google-auth-httplib2 google-auth-oauthlib
+
+      - name: Build
+        run: |
+          pyinstaller --onefile --name you2tomp3 \
+            --add-binary "$(which ffmpeg):." \
+            --add-binary "$(which ffprobe):." \
+            --add-data "src/credentials.json:." \
+            src/main.py
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: yt-mp3-linux
+          path: dist/you2tomp3

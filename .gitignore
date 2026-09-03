@@ -1,0 +1,11 @@
+exe/
+dist/
+build/
+ffmpeg/
+music/
+.venv/
+credentials.json
+token.pickle
+cookies.txt
+__pycache__/
+*.pyc
