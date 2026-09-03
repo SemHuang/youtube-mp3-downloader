@@ -81,9 +81,9 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
-
+        
       - name: Install FFmpeg (Linux)
-        run: sudo apt-get install -y ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y --fix-missing ffmpeg
 
       - name: Write credentials
         run: echo "$GOOGLE_CREDENTIALS" > src/credentials.json
