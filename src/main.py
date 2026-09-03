@@ -1,17 +1,7 @@
-import subprocess
-try:
-    subprocess.run(
-        [sys.executable, "-m", "pip", "install", "-U", "yt-dlp"],
-        capture_output=True, check=False
-    )
-    import importlib
-    importlib.reload(yt_dlp)
-except Exception:
-    pass
 import yt_dlp
 import yt_dlp.utils
 import tkinter as tk
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, messagebox
 import threading
 import queue
 import os
@@ -56,6 +46,47 @@ SRC_DIR = os.path.dirname(os.path.abspath(__file__))
 CREDS_PATH = os.path.join(get_bin_dir() if getattr(sys, "frozen", False) else SRC_DIR, "credentials.json")
 TOKEN_PATH = os.path.join(get_base_dir(), "token.pickle")
 COOKIES_PATH = os.path.join(get_base_dir(), "cookies.txt")
+
+
+# ── yt-dlp 更新 ──────────────────────────────────────────
+
+def check_update():
+    """檢查並更新 yt-dlp"""
+    update_btn.config(state="disabled", text="更新中...")
+    set_status("正在更新 yt-dlp...")
+
+    def _update():
+        try:
+            result = subprocess.run(
+                [sys.executable, "-m", "pip", "install", "-U", "yt-dlp"],
+                capture_output=True, text=True, check=False,
+                creationflags=subprocess.CREATE_NO_WINDOW
+            )
+            if result.returncode == 0:
+                # 取得新版本號
+                import importlib
+                importlib.reload(yt_dlp)
+                version = yt_dlp.version.__version__
+                root.after(0, _update_done, True, f"yt-dlp 已更新到 {version}")
+            else:
+                root.after(0, _update_done, False, "更新失敗，請手動更新")
+        except Exception as e:
+            root.after(0, _update_done, False, f"更新失敗: {e}")
+
+    def _update_done(success, msg):
+        update_btn.config(state="normal", text="檢查更新")
+        set_status(msg)
+        if success:
+            messagebox.showinfo("更新完成", msg)
+
+    threading.Thread(target=_update, daemon=True).start()
+
+
+def get_ytdlp_version():
+    try:
+        return yt_dlp.version.__version__
+    except Exception:
+        return "未知"
 
 
 # ── ffmpeg 工具 ──────────────────────────────────────────
@@ -261,6 +292,8 @@ def download_worker():
             "outtmpl": "music/%(title)s.%(ext)s",
             "progress_hooks": [progress_hook],
             "cookiefile": COOKIES_PATH if os.path.exists(COOKIES_PATH) else None,
+            "retries": 10,
+            "fragment_retries": 10,
         }
 
         try:
@@ -330,7 +363,7 @@ def start_worker():
 
 root = tk.Tk()
 root.title("YouTube MP3 Downloader Pro")
-root.geometry("650x560")
+root.geometry("650x600")
 
 tk.Label(root, text="YouTube URL").pack(pady=5)
 url_entry = tk.Entry(root, width=70)
@@ -368,6 +401,16 @@ cookies_label.pack(side="left", padx=5)
 
 tk.Button(cookies_frame, text="匯入 cookies.txt", command=import_cookies).pack(side="right", padx=4)
 
+# yt-dlp 更新區塊
+update_frame = tk.LabelFrame(root, text="yt-dlp", padx=8, pady=6)
+update_frame.pack(fill="x", padx=20, pady=4)
+
+version_label = tk.Label(update_frame, text=f"目前版本：{get_ytdlp_version()}", fg="gray")
+version_label.pack(side="left", padx=5)
+
+update_btn = tk.Button(update_frame, text="檢查更新", command=check_update)
+update_btn.pack(side="right", padx=4)
+
 # 進度條
 progress = ttk.Progressbar(root, length=400, maximum=100)
 progress.pack(pady=6)
@@ -377,7 +420,7 @@ status_box = tk.Text(root, height=2, width=60, state="disabled",
 status_box.pack()
 
 tk.Label(root, text="下載佇列").pack()
-queue_list = tk.Listbox(root, width=80, height=8)
+queue_list = tk.Listbox(root, width=80, height=6)
 queue_list.pack()
 
 start_worker()
