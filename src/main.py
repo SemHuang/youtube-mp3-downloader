@@ -1,3 +1,13 @@
+import subprocess
+try:
+    subprocess.run(
+        [sys.executable, "-m", "pip", "install", "-U", "yt-dlp"],
+        capture_output=True, check=False
+    )
+    import importlib
+    importlib.reload(yt_dlp)
+except Exception:
+    pass
 import yt_dlp
 import yt_dlp.utils
 import tkinter as tk
